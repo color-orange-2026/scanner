@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ระบบเช็คชื่อสตาฟ (Scan QR)</title>
+    <!-- โหลดไลบรารีที่จำเป็น -->
+    <script src="https://unpkg.com/html5-qrcode"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --accent-orange: #f97316;
+            --accent-green: #22c55e;
+            --accent-red: #ef4444;
+            --text-main: #f8fafc;
+            --text-sub: #94a3b8;
+        }
+
+        * { box-sizing: border-box; font-family: 'Kanit', sans-serif; }
+        
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 420px;
+            margin-top: 5vh;
+        }
+
+        /* การ์ดทั่วไป */
+        .card {
+            background: linear-gradient(145deg, #1e293b, #0f172a);
+            border-radius: 24px;
+            padding: 30px 25px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
+            border: 1px solid #334155;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* เอฟเฟกต์แสงไฟด้านบนการ์ด */
+        .card::before {
+            content: '';
+            position: absolute;
+            top: -50px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 150px;
+            height: 150px;
+            background: radial-gradient(circle, rgba(249,115,22,0.15) 0%, rgba(0,0,0,0) 70%);
+            border-radius: 50%;
+            pointer-events: none;
+        }
+
+        h1 { font-size: 24px; margin-bottom: 5px; font-weight: 600; }
+        p.subtitle { color: var(--text-sub); font-size: 14px; margin-top: 0; margin-bottom: 25px; }
+
+        input[type="password"] {
+            width: 100%;
+            padding: 16px;
+            border-radius: 14px;
+            border: 1px solid #475569;
+            background-color: rgba(15, 23, 42, 0.6);
+            color: #fff;
+            font-size: 16px;
+            text-align: center;
+            margin-bottom: 20px;
+            outline: none;
+            transition: all 0.3s ease;
+            letter-spacing: 2px;
+        }
+
+        input[type="password"]:focus {
+            border-color: var(--accent-orange);
+            box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.2);
+        }
+
+        .btn {
+            width: 100%;
+            padding: 16px;
+            border: none;
+            border-radius: 14px;
+            background-color: var(--accent-orange);
+            color: white;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 4px 15px rgba(249, 115, 22, 0.3);
+        }
+
+        .btn:hover { background-color: #ea580c; transform: translateY(-2px); }
+        .btn:active { transform: translateY(1px); }
+        .btn-green { background-color: var(--accent-green); box-shadow: 0 4px 15px rgba(34, 197, 94, 0.3); }
+        .btn-green:hover { background-color: #16a34a; }
+
+        /* ส่วนสแกนเนอร์ */
+        #scanner-section { display: none; }
+        
+        #reader { 
+            width: 100%; 
+            border-radius: 16px; 
+            overflow: hidden; 
+            border: 2px dashed #475569 !important; 
+            margin-bottom: 15px;
+        }
+        
+        /* ปรับแต่งปุ่มของตัวไลบรารีสแกนเนอร์ */
+        #reader button {
+            background-color: #334155;
+            color: white; 
+            border: none; 
+            padding: 8px 16px;
+            border-radius: 8px; 
+            font-family: 'Kanit'; 
+            margin: 10px 5px; 
+            cursor: pointer;
+            font-size: 14px;
+            transition: 0.2s;
+        }
+        #reader button:hover { background-color: #475569; }
+
+        /* แสดงผลหลังสแกน */
+        #result-card { display: none; }
+        
+        .avatar-container {
+            position: relative;
+            width: 120px;
+            height: 120px;
+            margin: 15px auto;
+        }
+
+        .avatar {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 4px solid #334155;
+            position: relative;
+            z-index: 2;
+        }
+
+        .avatar.success { border-color: var(--accent-green); }
+        .avatar.error { border-color: var(--accent-red); }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-size: 15px;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+        .badge-success { background-color: rgba(34, 197, 94, 0.15); color: var(--accent-green); border: 1px solid rgba(34, 197, 94, 0.3); }
+        .badge-error { background-color: rgba(239, 68, 68, 0.15); color: var(--accent-red); border: 1px solid rgba(239, 68, 68, 0.3); }
+
+        .time-text { color: var(--text-sub); font-size: 14px; margin-top: 8px; background: rgba(0,0,0,0.2); padding: 5px 15px; border-radius: 10px; display: inline-block; }
+        .logout-btn { color: var(--text-sub); font-size: 13px; background: none; border: none; text-decoration: underline; cursor: pointer; margin-top: 25px; transition: color 0.2s;}
+        .logout-btn:hover { color: var(--accent-red); }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- 1. หน้าต่างล็อกอิน -->
+        <div id="login-card" class="card">
+            <h1>🔒 เข้าสู่ระบบสตาฟ</h1>
+            <p class="subtitle">กรุณากรอกรหัสผ่านเพื่อเริ่มเซสชันสแกน</p>
+            <input type="password" id="password-input" placeholder="••••••••" onkeypress="handleEnter(event)">
+            <button class="btn" onclick="checkPassword()">เข้าสู่ระบบ</button>
+        </div>
+
+        <!-- 2. หน้าต่างสแกนเนอร์ -->
+        <div id="scanner-section">
+            <div class="card" id="camera-card">
+                <h1>📷 สแกน QR Code</h1>
+                <p class="subtitle">ระบบจะบันทึกการเช็คชื่ออัตโนมัติ</p>
+                <div id="reader"></div>
+                <button class="logout-btn" onclick="logout()">ออกจากระบบสตาฟ</button>
+            </div>
+
+            <!-- 3. หน้าต่างแสดงผลหลังสแกน -->
+            <div class="card" id="result-card">
+                <div id="status-badge" class="status-badge badge-success">✅ เช็คชื่อสำเร็จ</div>
+                <div id="profile-area">
+                    <div class="avatar-container">
+                        <img id="avatar-img" class="avatar" src="" alt="รูปโปรไฟล์">
+                    </div>
+                    <h2 id="student-name" style="margin: 5px 0 2px 0; font-size: 22px;">-</h2>
+                    <p id="student-room" style="color: var(--accent-orange); margin: 0; font-weight: 500; font-size: 16px;">-</p>
+                    <p id="student-time" class="time-text">-</p>
+                </div>
+                <button class="btn btn-green" style="margin-top: 25px;" onclick="resetScanner()">📷 สแกนคนต่อไป</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const GAS_API_URL = "https://script.google.com/macros/s/AKfycbwy1ls3Y3_g6tUBJYbiAwuHWFwBru7WEmPY5TxzgOrhJebrLo8CauxsK7wInbU9o3o1/exec";
+        const ADMIN_PASS = "Orange-admin-2026";
+        let html5QrcodeScanner;
+        let isScanning = true;
+        
+        // อาร์เรย์เก็บประวัติรหัสที่สแกนแล้วในเซสชันนี้ เพื่อป้องกันการสแกนซ้ำติดๆ กัน
+        let scannedHistory = new Set();
+
+        // ตรวจสอบสถานะการล็อกอิน (ใช้ localStorage เพื่อให้จำค่าแม้รีเฟรชหน้าเว็บ)
+        window.onload = function() {
+            if (localStorage.getItem('staffLoggedIn') === 'true') {
+                showScanner();
+            }
+        };
+
+        function handleEnter(e) {
+            if(e.key === 'Enter') checkPassword();
+        }
+
+        function checkPassword() {
+            const inputPass = document.getElementById('password-input').value;
+            if (inputPass === ADMIN_PASS) {
+                // บันทึกลง localStorage ให้จำค่าไว้ในเครื่อง
+                localStorage.setItem('staffLoggedIn', 'true');
+                
+                Swal.fire({
+                    icon: 'success',
+                    title: 'เข้าสู่ระบบสำเร็จ',
+                    showConfirmButton: false,
+                    timer: 1000,
+                    background: '#1e293b',
+                    color: '#fff'
+                }).then(() => {
+                    showScanner();
+                });
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'รหัสผ่านไม่ถูกต้อง',
+                    confirmButtonColor: '#f97316',
+                    background: '#1e293b',
+                    color: '#fff'
+                });
+            }
+        }
+
+        function logout() {
+            Swal.fire({
+                title: 'ต้องการออกจากระบบ?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#ef4444',
+                cancelButtonColor: '#475569',
+                confirmButtonText: 'ออกจากระบบ',
+                cancelButtonText: 'ยกเลิก',
+                background: '#1e293b',
+                color: '#fff'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    localStorage.removeItem('staffLoggedIn');
+                    location.reload();
+                }
+            });
+        }
+
+        function showScanner() {
+            document.getElementById('login-card').style.display = 'none';
+            document.getElementById('scanner-section').style.display = 'block';
+            initCamera();
+        }
+
+        function initCamera() {
+            // ปรับ FPS ให้สูงขึ้นเล็กน้อยเพื่อความไว
+            html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 15, qrbox: { width: 220, height: 220 } }, false);
+            html5QrcodeScanner.render(onScanSuccess);
+        }
+
+        function onScanSuccess(decodedText) {
+            if (!isScanning) return;
+            
+            const studentId = decodedText.trim();
+
+            // ระบบป้องกันการสแกนรหัสเดิมซ้ำ
+            if (scannedHistory.has(studentId)) {
+                isScanning = false;
+                html5QrcodeScanner.pause();
+                
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'สแกนซ้ำ!',
+                    text: 'รหัส ' + studentId + ' เพิ่งเช็คชื่อไปแล้ว',
+                    confirmButtonColor: '#f97316',
+                    background: '#1e293b',
+                    color: '#fff'
+                }).then(() => {
+                    isScanning = true;
+                    html5QrcodeScanner.resume();
+                });
+                return;
+            }
+
+            // เริ่มกระบวนการบันทึก
+            isScanning = false;
+            html5QrcodeScanner.pause();
+
+            // แจ้งเตือนสถานะกำลังโหลด
+            Swal.fire({
+                title: 'กำลังตรวจสอบข้อมูล...',
+                text: 'รหัส: ' + studentId,
+                allowOutsideClick: false,
+                background: '#1e293b',
+                color: '#fff',
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            let formData = new FormData();
+            formData.append('studentId', studentId);
+
+            fetch(GAS_API_URL, { method: 'POST', body: formData })
+            .then(res => res.json())
+            .then(data => {
+                Swal.close(); // ปิดหน้าต่างโหลด
+                document.getElementById('camera-card').style.display = 'none';
+                document.getElementById('result-card').style.display = 'block';
+                
+                const avatar = document.getElementById('avatar-img');
+
+                if (data.status === "success") {
+                    // บันทึกรหัสนี้ลงในประวัติว่าสแกนแล้ว
+                    scannedHistory.add(studentId);
+
+                    document.getElementById('status-badge').className = 'status-badge badge-success';
+                    document.getElementById('status-badge').innerHTML = '✅ บันทึกเช็คชื่อสำเร็จ';
+                    
+                    // ปรับตัวแปรให้ตรงกับ Backend ใหม่ (name, room)
+                    document.getElementById('student-name').innerText = data.name || "-";
+                    document.getElementById('student-room').innerText = data.room ? "ห้อง " + data.room : "-";
+                    document.getElementById('student-time').innerText = "เวลาสแกน: " + data.checkInTime;
+                    
+                    avatar.className = "avatar success";
+                    avatar.src = data.image || `https://ui-avatars.com/api/?name=${encodeURIComponent(data.name || 'N')}&background=22c55e&color=fff&size=150`;
+                
+                } else {
+                    document.getElementById('status-badge').className = 'status-badge badge-error';
+                    document.getElementById('status-badge').innerHTML = '❌ ไม่พบข้อมูลนักเรียน';
+                    
+                    document.getElementById('student-name').innerText = "รหัส: " + studentId;
+                    document.getElementById('student-room').innerText = "ไม่อยู่ในระบบฐานข้อมูล";
+                    document.getElementById('student-time').innerText = "โปรดตรวจสอบความถูกต้อง";
+                    
+                    avatar.className = "avatar error";
+                    avatar.src = "https://ui-avatars.com/api/?name=X&background=ef4444&color=fff&size=150";
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'เชื่อมต่อล้มเหลว',
+                    text: 'กรุณาตรวจสอบอินเทอร์เน็ต',
+                    confirmButtonColor: '#ef4444',
+                    background: '#1e293b',
+                    color: '#fff'
+                }).then(() => {
+                    resetScanner();
+                });
+            });
+        }
+
+        function resetScanner() {
+            document.getElementById('result-card').style.display = 'none';
+            document.getElementById('camera-card').style.display = 'block';
+            isScanning = true;
+            html5QrcodeScanner.resume();
+        }
+    </script>
+</body>
+</html>
