@@ -10,13 +10,14 @@
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-color: #0f172a;
-            --card-bg: #1e293b;
+            /* ปรับธีมเป็นสีแสดอ่อน */
+            --bg-color: #ffedd5; /* สีแสดอ่อนพื้นหลัง */
+            --card-bg: #ffffff;  /* สีพื้นหลังการ์ด */
             --accent-orange: #f97316;
             --accent-green: #22c55e;
             --accent-red: #ef4444;
-            --text-main: #f8fafc;
-            --text-sub: #94a3b8;
+            --text-main: #1e293b; /* สีตัวหนังสือหลักให้เข้มเพื่อตัดกับพื้นสว่าง */
+            --text-sub: #64748b;  /* สีตัวหนังสือรอง */
         }
 
         * { box-sizing: border-box; font-family: 'Kanit', sans-serif; }
@@ -40,11 +41,11 @@
 
         /* การ์ดทั่วไป */
         .card {
-            background: linear-gradient(145deg, #1e293b, #0f172a);
+            background: var(--card-bg);
             border-radius: 24px;
             padding: 30px 25px;
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
-            border: 1px solid #334155;
+            box-shadow: 0 15px 35px rgba(249, 115, 22, 0.15); /* เงาสีแสดอ่อนๆ */
+            border: 1px solid #fed7aa;
             text-align: center;
             position: relative;
             overflow: hidden;
@@ -59,7 +60,7 @@
             transform: translateX(-50%);
             width: 150px;
             height: 150px;
-            background: radial-gradient(circle, rgba(249,115,22,0.15) 0%, rgba(0,0,0,0) 70%);
+            background: radial-gradient(circle, rgba(249,115,22,0.15) 0%, rgba(255,255,255,0) 70%);
             border-radius: 50%;
             pointer-events: none;
         }
@@ -71,9 +72,9 @@
             width: 100%;
             padding: 16px;
             border-radius: 14px;
-            border: 1px solid #475569;
-            background-color: rgba(15, 23, 42, 0.6);
-            color: #fff;
+            border: 1px solid #fdba74;
+            background-color: #fff7ed;
+            color: var(--text-main);
             font-size: 16px;
             text-align: center;
             margin-bottom: 20px;
@@ -85,6 +86,7 @@
         input[type="password"]:focus {
             border-color: var(--accent-orange);
             box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.2);
+            background-color: #ffffff;
         }
 
         .btn {
@@ -113,15 +115,16 @@
             width: 100%; 
             border-radius: 16px; 
             overflow: hidden; 
-            border: 2px dashed #475569 !important; 
+            border: 2px dashed #fdba74 !important; 
             margin-bottom: 15px;
+            background-color: #fff7ed;
         }
         
         /* ปรับแต่งปุ่มของตัวไลบรารีสแกนเนอร์ */
         #reader button {
-            background-color: #334155;
-            color: white; 
-            border: none; 
+            background-color: #ffedd5;
+            color: #ea580c; 
+            border: 1px solid #fdba74; 
             padding: 8px 16px;
             border-radius: 8px; 
             font-family: 'Kanit'; 
@@ -130,24 +133,24 @@
             font-size: 14px;
             transition: 0.2s;
         }
-        #reader button:hover { background-color: #475569; }
+        #reader button:hover { background-color: #fed7aa; }
 
         /* แสดงผลหลังสแกน */
         #result-card { display: none; }
         
         .avatar-container {
             position: relative;
-            width: 120px;
-            height: 120px;
+            width: 130px;
+            height: 130px;
             margin: 15px auto;
         }
 
         .avatar {
             width: 100%;
             height: 100%;
-            border-radius: 50%;
+            border-radius: 12px; /* เปลี่ยนจากวงกลม (50%) เป็นสี่เหลี่ยมขอบมน */
             object-fit: cover;
-            border: 4px solid #334155;
+            border: 4px solid #fed7aa;
             position: relative;
             z-index: 2;
         }
@@ -169,8 +172,16 @@
         .badge-success { background-color: rgba(34, 197, 94, 0.15); color: var(--accent-green); border: 1px solid rgba(34, 197, 94, 0.3); }
         .badge-error { background-color: rgba(239, 68, 68, 0.15); color: var(--accent-red); border: 1px solid rgba(239, 68, 68, 0.3); }
 
-        .time-text { color: var(--text-sub); font-size: 14px; margin-top: 8px; background: rgba(0,0,0,0.2); padding: 5px 15px; border-radius: 10px; display: inline-block; }
-        .logout-btn { color: var(--text-sub); font-size: 13px; background: none; border: none; text-decoration: underline; cursor: pointer; margin-top: 25px; transition: color 0.2s;}
+        .time-text { 
+            color: #ea580c; 
+            font-size: 14px; 
+            margin-top: 8px; 
+            background: #ffedd5; 
+            padding: 5px 15px; 
+            border-radius: 10px; 
+            display: inline-block; 
+        }
+        .logout-btn { color: var(--text-sub); font-size: 14px; background: none; border: none; text-decoration: underline; cursor: pointer; margin-top: 25px; transition: color 0.2s;}
         .logout-btn:hover { color: var(--accent-red); }
     </style>
 </head>
@@ -241,8 +252,8 @@
                     title: 'เข้าสู่ระบบสำเร็จ',
                     showConfirmButton: false,
                     timer: 1000,
-                    background: '#1e293b',
-                    color: '#fff'
+                    background: '#ffffff', // ปรับสีให้เข้ากับธีมสว่าง
+                    color: '#1e293b'
                 }).then(() => {
                     showScanner();
                 });
@@ -251,8 +262,8 @@
                     icon: 'error',
                     title: 'รหัสผ่านไม่ถูกต้อง',
                     confirmButtonColor: '#f97316',
-                    background: '#1e293b',
-                    color: '#fff'
+                    background: '#ffffff',
+                    color: '#1e293b'
                 });
             }
         }
@@ -263,11 +274,11 @@
                 icon: 'warning',
                 showCancelButton: true,
                 confirmButtonColor: '#ef4444',
-                cancelButtonColor: '#475569',
+                cancelButtonColor: '#64748b',
                 confirmButtonText: 'ออกจากระบบ',
                 cancelButtonText: 'ยกเลิก',
-                background: '#1e293b',
-                color: '#fff'
+                background: '#ffffff',
+                color: '#1e293b'
             }).then((result) => {
                 if (result.isConfirmed) {
                     localStorage.removeItem('staffLoggedIn');
@@ -303,8 +314,8 @@
                     title: 'สแกนซ้ำ!',
                     text: 'รหัส ' + studentId + ' เพิ่งเช็คชื่อไปแล้ว',
                     confirmButtonColor: '#f97316',
-                    background: '#1e293b',
-                    color: '#fff'
+                    background: '#ffffff',
+                    color: '#1e293b'
                 }).then(() => {
                     isScanning = true;
                     html5QrcodeScanner.resume();
@@ -321,8 +332,8 @@
                 title: 'กำลังตรวจสอบข้อมูล...',
                 text: 'รหัส: ' + studentId,
                 allowOutsideClick: false,
-                background: '#1e293b',
-                color: '#fff',
+                background: '#ffffff',
+                color: '#1e293b',
                 didOpen: () => {
                     Swal.showLoading();
                 }
@@ -374,8 +385,8 @@
                     title: 'เชื่อมต่อล้มเหลว',
                     text: 'กรุณาตรวจสอบอินเทอร์เน็ต',
                     confirmButtonColor: '#ef4444',
-                    background: '#1e293b',
-                    color: '#fff'
+                    background: '#ffffff',
+                    color: '#1e293b'
                 }).then(() => {
                     resetScanner();
                 });
